@@ -66,7 +66,7 @@ class EXPORT_OT_jsx(Operator):
                 formatted_objects.append(
                     f'''
     <mesh position={{[{format(obj.location.x, ".4f")}, {format(obj.location.y, ".4f")}, {format(obj.location.z, ".4f")}]}}>
-      <{primitive_name} args={{[10, 3, 16, 20]}} />
+      <{primitive_name}  />
       <meshStandardMaterial color="gray" />
     </mesh>
                     '''
