@@ -42,7 +42,7 @@ def get_primitive_name(obj):
     if object_type == "MESH" and obj.data.name in blender_to_r3f:
         return blender_to_r3f[obj.data.name]
     else:
-        return ''.join([word.capitalize() for word in object_type.lower().split()])
+        return None  # Return None if no matching primitive is found
 
 
 
@@ -61,11 +61,12 @@ class EXPORT_OT_jsx(Operator):
         formatted_objects = []
 
         for obj in bpy.context.scene.objects:
-            if obj.type == 'MESH':
+            primitive_name = get_primitive_name(obj)
+            if primitive_name is not None:  # Only add JSX for recognized primitives
                 formatted_objects.append(
                     f'''
     <mesh position={{[{format(obj.location.x, ".4f")}, {format(obj.location.y, ".4f")}, {format(obj.location.z, ".4f")}]}}>
-      <{get_primitive_name(obj)} args={{[10, 3, 16, 20]}} />
+      <{primitive_name} args={{[10, 3, 16, 20]}} />
       <meshStandardMaterial color="gray" />
     </mesh>
                     '''
