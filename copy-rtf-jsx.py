@@ -28,22 +28,21 @@ def format_name(name):
 
 def get_primitive_name(obj):
     blender_to_r3f = {
-        "Cube": "box",
-        "UV Sphere": "sphere",
-        "Icosphere": "icosahedron",
-        "Cylinder": "cylinder",
-        "Cone": "cone",
-        "Torus": "torus",
-        "Plane": "plane",
-        "Circle": "circle",
-        "Text": "text",
-        "Wireframe": "wireframeGeometry"  # This might need further handling
+        "Cube": "Box",
+        "UV Sphere": "Sphere",
+        "Icosphere": "Icosahedron",
+        "Cylinder": "Cylinder",
+        "Cone": "Cone",
+        "Torus": "Torus",
+        "Plane": "Plane",
+        "Circle": "Circle",
+        # ... (additional mappings if necessary)
     }
     object_type = obj.type
     if object_type == "MESH" and obj.data.name in blender_to_r3f:
         return blender_to_r3f[obj.data.name]
     else:
-        return ''.join([word.capitalize() for word in object_type.lower().split()])
+      #  return ''.join([word.capitalize() for word in object_type.lower().split()])
 
 
 
