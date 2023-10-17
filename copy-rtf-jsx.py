@@ -24,13 +24,29 @@ def format_name(name):
     name = re.sub('[^A-Za-z0-9]+', '', name)
     return name
 
+
+
 def get_primitive_name(obj):
+    blender_to_r3f = {
+        "Cube": "box",
+        "UV Sphere": "sphere",
+        "Icosphere": "icosahedron",
+        "Cylinder": "cylinder",
+        "Cone": "cone",
+        "Torus": "torus",
+        "Plane": "plane",
+        "Circle": "circle",
+        "Text": "text",
+        "Wireframe": "wireframeGeometry"  # This might need further handling
+    }
     object_type = obj.type
-    if object_type == "MESH":
-        return format_name(obj.data.name)
+    if object_type == "MESH" and obj.data.name in blender_to_r3f:
+        return blender_to_r3f[obj.data.name]
     else:
-        # For non-mesh types, return the type in camelCase format
         return ''.join([word.capitalize() for word in object_type.lower().split()])
+
+
+
 
 class EXPORT_OT_jsx(Operator):
     """Copy to React Three Fiber JSX"""
@@ -44,10 +60,15 @@ class EXPORT_OT_jsx(Operator):
 
     def execute(self, context):
         formatted_objects = [
-            f'<{get_primitive_name(obj)} position={{[{format(obj.location.x, ".4f")}, {format(obj.location.y, ".4f")}, {format(obj.location.z, ".4f")}]}} />'
+            f'''
+    <mesh position={{[{format(obj.location.x, ".4f")}, {format(obj.location.y, ".4f")}, {format(obj.location.z, ".4f")}]}}>
+      <{get_primitive_name(obj)} args={{[10, 3, 16, 20]}} />
+      <meshStandardMaterial color="gray" />
+    </mesh>
+            '''
             for obj in bpy.context.scene.objects
         ]
-        
+
         jsx_content = "\n".join(formatted_objects)
         bpy.context.window_manager.clipboard = jsx_content
         self.report({'INFO'}, "Object names and positions copied to clipboard!")
