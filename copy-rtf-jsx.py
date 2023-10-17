@@ -19,16 +19,18 @@ def remove_accents(input_str):
     return only_ascii.decode()
 
 def format_name(name):
-    # Remove accents
     name = remove_accents(name)
-    
-    # Replace spaces with camel case
     name = ''.join([word.capitalize() for word in name.split()])
-    
-    # Remove any non-English characters
     name = re.sub('[^A-Za-z0-9]+', '', name)
     return name
 
+def get_primitive_name(obj):
+    object_type = obj.type
+    if object_type == "MESH":
+        return format_name(obj.data.name)
+    else:
+        # For non-mesh types, return the type in camelCase format
+        return ''.join([word.capitalize() for word in object_type.lower().split()])
 
 class EXPORT_OT_jsx(Operator):
     """Copy to React Three Fiber JSX"""
@@ -41,24 +43,15 @@ class EXPORT_OT_jsx(Operator):
         return context.selected_objects is not None
 
     def execute(self, context):
-        # Get formatted object names and positions from the current scene
         formatted_objects = [
-            f'<{format_name(obj.name)} position={{[{format(obj.location.x, ".4f")}, {format(obj.location.y, ".4f")}, {format(obj.location.z, ".4f")}]}} />'
+            f'<{get_primitive_name(obj)} position={{[{format(obj.location.x, ".4f")}, {format(obj.location.y, ".4f")}, {format(obj.location.z, ".4f")}]}} />'
             for obj in bpy.context.scene.objects
         ]
         
-        # Join the formatted objects line by line
         jsx_content = "\n".join(formatted_objects)
-        
-        # Copy the content to clipboard
         bpy.context.window_manager.clipboard = jsx_content
-        
         self.report({'INFO'}, "Object names and positions copied to clipboard!")
         return {'FINISHED'}
-
-
-
-
 
 class RTF_PT_main_panel(Panel):
     """Main RTF Panel"""
