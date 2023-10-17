@@ -28,21 +28,21 @@ def format_name(name):
 
 def get_primitive_name(obj):
     blender_to_r3f = {
-        "Cube": "Box",
-        "UV Sphere": "Sphere",
-        "Icosphere": "Icosahedron",
-        "Cylinder": "Cylinder",
-        "Cone": "Cone",
-        "Torus": "Torus",
-        "Plane": "Plane",
-        "Circle": "Circle",
+        "Cube": "boxGeometry",
+        "UV Sphere": "sphereGeometry",
+        "Icosphere": "icosahedronGeometry",
+        "Cylinder": "cylinderGeometry",
+        "Cone": "coneGeometry",
+        "Torus": "torusGeometry",
+        "Plane": "plane",
+        "Circle": "circleGeometry",
         # ... (additional mappings if necessary)
     }
     object_type = obj.type
     if object_type == "MESH" and obj.data.name in blender_to_r3f:
         return blender_to_r3f[obj.data.name]
     else:
-      #  return ''.join([word.capitalize() for word in object_type.lower().split()])
+        return ''.join([word.capitalize() for word in object_type.lower().split()])
 
 
 
@@ -58,17 +58,36 @@ class EXPORT_OT_jsx(Operator):
         return context.selected_objects is not None
 
     def execute(self, context):
-        formatted_objects = [
-            f'''
+        formatted_objects = []
+
+        for obj in bpy.context.scene.objects:
+            if obj.type == 'MESH':
+                formatted_objects.append(
+                    f'''
     <mesh position={{[{format(obj.location.x, ".4f")}, {format(obj.location.y, ".4f")}, {format(obj.location.z, ".4f")}]}}>
       <{get_primitive_name(obj)} args={{[10, 3, 16, 20]}} />
       <meshStandardMaterial color="gray" />
     </mesh>
-            '''
-            for obj in bpy.context.scene.objects
-        ]
+                    '''
+                )
+            elif obj.type == 'LAMP':
+                light_type = obj.data.type
+                if light_type == 'POINT':
+                    formatted_objects.append(
+                        f'<pointLight position={{[{format(obj.location.x, ".4f")}, {format(obj.location.y, ".4f")}, {format(obj.location.z, ".4f")}]}} />\n'
+                    )
+                elif light_type == 'SUN':
+                    formatted_objects.append(
+                        f'<ambientLight />\n'
+                    )
+                # ... (additional conditions for other light types if necessary)
+            elif obj.type == 'CAMERA':
+                formatted_objects.append(
+                    f'<Camera position={{[{format(obj.location.x, ".4f")}, {format(obj.location.y, ".4f")}, {format(obj.location.z, ".4f")}]}} />\n'
+                )
+            # ... (additional conditions for other object types if necessary)
 
-        jsx_content = "\n".join(formatted_objects)
+        jsx_content = "".join(formatted_objects)
         bpy.context.window_manager.clipboard = jsx_content
         self.report({'INFO'}, "Object names and positions copied to clipboard!")
         return {'FINISHED'}
